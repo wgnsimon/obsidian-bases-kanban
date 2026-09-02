@@ -117,6 +117,9 @@ export const CSS_CLASSES = {
 	COLUMN_COLOR_SWATCH: 'obk-column-color-swatch',
 	COLUMN_COLOR_SWATCH_ACTIVE: 'obk-column-color-swatch--active',
 	COLUMN_COLOR_NONE: 'obk-column-color-none',
+
+	// Column nominated as "done" via the Done column view option
+	COLUMN_DONE: 'obk-column--done',
 } as const;
 
 /** Sortable.js configuration constants */

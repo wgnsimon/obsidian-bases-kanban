@@ -13,6 +13,10 @@ export interface ColumnRenderCtx {
 	// persist only because they're saved in columnOrder, so they get a remove
 	// button. Board-wide, so it can't be derived from a single column's entries.
 	globallyEmptyColumns: Set<string>;
+	// Column values the user nominated as "done", lowercased for case-insensitive
+	// matching. Cards in these columns render struck through, via a class on the
+	// column so card markup stays untouched and survives patching.
+	doneColumnValues: Set<string>;
 }
 
 export interface ColumnCallbacks {
@@ -62,6 +66,10 @@ export function createColumn(
 	const columnEl = ctx.doc.createElement('div');
 	columnEl.className = CSS_CLASSES.COLUMN;
 	columnEl.setAttribute(DATA_ATTRIBUTES.COLUMN_VALUE, value);
+
+	if (ctx.doneColumnValues.has(value.toLowerCase())) {
+		columnEl.classList.add(CSS_CLASSES.COLUMN_DONE);
+	}
 
 	const colorName = ctx.prefs.columnColors[value] ?? null;
 	cb.applyColumnColor(columnEl, colorName);
@@ -124,6 +132,13 @@ export function patchColumnCards(
 	} else if (!showRemoveButton && existingRemoveBtn) {
 		existingRemoveBtn.remove();
 	}
+
+	// Re-sync the done class so the incremental path can't drift from a full rebuild
+	// after the setting changes underneath an already-rendered column.
+	columnEl.classList.toggle(
+		CSS_CLASSES.COLUMN_DONE,
+		!!columnValue && ctx.doneColumnValues.has(columnValue.toLowerCase()),
+	);
 
 	const existingAddBtn = headerEl?.querySelector(`.${CSS_CLASSES.COLUMN_ADD_BTN}`) ?? null;
 	const hasFolder = !!cb.getQuickAddFolder();
