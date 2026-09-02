@@ -645,3 +645,48 @@
 .obk-column--full-color .obk-column-body {
 	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 12%, var(--background-secondary));
 }
+
+/* Collapsed column: the header stays fully visible and the column keeps its
+   normal width — only the card body is hidden, mirroring collapsed swimlanes.
+   The swimlane-scoped selector matches the specificity of the
+   `.obk-board--with-swimlanes .obk-column` sizing rules so a collapsed column
+   shrinks to its header in both layouts instead of stretching to the row. */
+.obk-column--collapsed .obk-column-body {
+	display: none;
+}
+
+.obk-column--collapsed,
+.obk-board--with-swimlanes .obk-column--collapsed {
+	min-height: 0;
+	align-self: flex-start;
+}
+
+.obk-column-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	color: var(--text-muted);
+	background: var(--background-modifier-border);
+	border: 0;
+	border-radius: 4px;
+	cursor: pointer;
+	user-select: none;
+	flex-shrink: 0;
+	--icon-size: var(--icon-xs);
+	transition:
+		background 0.1s ease,
+		color 0.1s ease;
+}
+
+.obk-column-toggle:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-border-hover);
+}
+
+.obk-column-toggle:focus-visible {
+	outline: 2px solid var(--background-modifier-border-focus);
+	outline-offset: 2px;
+}

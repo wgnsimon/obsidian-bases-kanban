@@ -1,4 +1,5 @@
 import type { BasesEntry } from 'obsidian';
+import { setIcon } from 'obsidian';
 import { COLOR_PALETTE, CSS_CLASSES, DATA_ATTRIBUTES } from '../constants.ts';
 import { createCard, computeCardFingerprint, type CardRenderCtx, type CardCallbacks } from './card.ts';
 
@@ -16,6 +17,10 @@ export interface ColumnRenderCtx {
 	// Board-level option: tint the whole column in its accent color, not just the
 	// header. Uncolored columns are unaffected because the accent is transparent.
 	colorEntireColumn: boolean;
+	// Column values the user collapsed. Scoped to the group-by property only: the
+	// same value is rendered once per swimlane, and all of those nodes share one
+	// collapsed state.
+	collapsedColumns: Set<string>;
 }
 
 export interface ColumnCallbacks {
@@ -24,6 +29,16 @@ export interface ColumnCallbacks {
 	onRemoveColumn: (columnValue: string, columnEl: HTMLElement) => void;
 	createAddButton: (columnValue: string, swimlaneValue: string | null) => HTMLElement;
 	getQuickAddFolder: () => string | null;
+	onToggleColumnCollapsed: (columnValue: string, columnEl: HTMLElement, toggleBtn: HTMLElement) => void;
+}
+
+export function updateColumnToggle(toggleBtn: HTMLElement, isCollapsed: boolean): void {
+	const label = isCollapsed ? 'Expand column' : 'Collapse column';
+	toggleBtn.empty();
+	setIcon(toggleBtn, isCollapsed ? 'chevron-right' : 'chevron-down');
+	toggleBtn.setAttribute('aria-label', label);
+	toggleBtn.setAttribute('title', label);
+	toggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
 }
 
 export function applyColumnColor(columnEl: HTMLElement, colorName: string | null): void {
@@ -74,6 +89,23 @@ export function createColumn(
 
 	const dragHandle = headerEl.createDiv({ cls: CSS_CLASSES.COLUMN_DRAG_HANDLE });
 	dragHandle.textContent = '⋮⋮';
+
+	const isCollapsed = ctx.collapsedColumns.has(value);
+	if (isCollapsed) columnEl.classList.add(CSS_CLASSES.COLUMN_COLLAPSED);
+
+	const toggleBtn = headerEl.createEl('button', {
+		cls: CSS_CLASSES.COLUMN_TOGGLE,
+		attr: { type: 'button' },
+	});
+	updateColumnToggle(toggleBtn, isCollapsed);
+	toggleBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		try {
+			cb.onToggleColumnCollapsed(value, columnEl, toggleBtn);
+		} catch (error) {
+			console.error('KanbanView: error toggling column collapsed state', error);
+		}
+	});
 
 	const colorBtn = headerEl.createDiv({ cls: CSS_CLASSES.COLUMN_COLOR_BTN });
 	colorBtn.setAttribute('aria-label', `Set color for column: ${value}`);
@@ -141,6 +173,13 @@ export function patchColumnCards(
 	} else if (!hasFolder && existingAddBtn) {
 		existingAddBtn.remove();
 	}
+
+	// Re-sync collapsed state so the incremental path never drifts from _prefs
+	// (e.g. after a lane was rebuilt while another lane's column was toggled).
+	const isCollapsed = !!columnValue && ctx.collapsedColumns.has(columnValue);
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_COLLAPSED, isCollapsed);
+	const toggleBtn = headerEl?.querySelector<HTMLElement>(`.${CSS_CLASSES.COLUMN_TOGGLE}`) ?? null;
+	if (toggleBtn) updateColumnToggle(toggleBtn, isCollapsed);
 
 	const newPaths = new Set(newEntries.map((e) => e.file.path));
 	body.querySelectorAll<HTMLElement>(`.${CSS_CLASSES.CARD}`).forEach((card) => {

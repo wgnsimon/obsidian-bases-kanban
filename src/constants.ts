@@ -140,6 +140,9 @@ export const CSS_CLASSES = {
 
 	// Board-level "Color entire column" option: tints the whole column, not just its header
 	COLUMN_FULL_COLOR: 'obk-column--full-color',
+	// Collapsible column
+	COLUMN_COLLAPSED: 'obk-column--collapsed',
+	COLUMN_TOGGLE: 'obk-column-toggle',
 } as const;
 
 /** Sortable.js configuration constants */

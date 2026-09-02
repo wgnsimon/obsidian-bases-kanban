@@ -17,6 +17,7 @@ import {
 	applyColumnColor as applyColumnColorEl,
 	createColumn as createColumnEl,
 	patchColumnCards as patchColumnCardsEl,
+	updateColumnToggle as updateColumnToggleEl,
 	type ColumnRenderCtx,
 	type ColumnCallbacks,
 } from './components/column.ts';
@@ -87,6 +88,10 @@ export function isCollapsedLanes(value: unknown): value is Record<string, string
 	return isStringArrayRecord(value);
 }
 
+export function isCollapsedColumns(value: unknown): value is Record<string, string[]> {
+	return isStringArrayRecord(value);
+}
+
 export class KanbanView extends BasesView {
 	type = 'kanban-view';
 	hoverPopover: HoverPopover | null = null;
@@ -138,12 +143,14 @@ export class KanbanView extends BasesView {
 		cardOrders: Record<string, string[]>;
 		columnColors: Record<string, string>;
 		collapsedLanes: Set<string>;
+		collapsedColumns: Set<string>;
 	} = {
 		columnOrder: [],
 		swimlaneOrder: [],
 		cardOrders: {},
 		columnColors: {}, // columnValue → colorName
 		collapsedLanes: new Set(),
+		collapsedColumns: new Set(),
 	};
 	private _prefsPropertyId: BasesPropertyId | null = null;
 	private _prefsSwimlanePropertyId: BasesPropertyId | null = null;
@@ -297,6 +304,13 @@ export class KanbanView extends BasesView {
 		const allSwimlaneOrders = isColumnOrders(rawSwimlaneOrders) ? rawSwimlaneOrders : {};
 		this._prefs.swimlaneOrder =
 			swimlaneScopedKey && allSwimlaneOrders[swimlaneScopedKey] ? [...allSwimlaneOrders[swimlaneScopedKey]] : [];
+
+		// Collapsed columns — scoped by the group-by property alone. A column value
+		// is the same value in every lane, so its collapsed state is not tied to the
+		// swimlane axis. Default = none collapsed.
+		const rawCollapsedColumns = this.config?.get('collapsedColumns');
+		const allCollapsedColumns = isCollapsedColumns(rawCollapsedColumns) ? rawCollapsedColumns : {};
+		this._prefs.collapsedColumns = new Set(allCollapsedColumns[propertyId] ?? []);
 	}
 
 	/**
@@ -342,6 +356,18 @@ export class KanbanView extends BasesView {
 				isCollapsedLanes,
 				Array.from(this._prefs.collapsedLanes),
 				swimlaneScopedKey,
+			);
+		}
+
+		// Skip the write entirely while nothing is (or ever was) collapsed, so a
+		// board the user never touched doesn't gain an empty collapsedColumns entry.
+		const rawCollapsedColumns = this.config?.get('collapsedColumns');
+		if (this._prefs.collapsedColumns.size > 0 || isCollapsedColumns(rawCollapsedColumns)) {
+			this._persistConfigKey(
+				'collapsedColumns',
+				isCollapsedColumns,
+				Array.from(this._prefs.collapsedColumns),
+				this._prefsPropertyId,
 			);
 		}
 	}
@@ -984,6 +1010,32 @@ export class KanbanView extends BasesView {
 		this._persistPrefs();
 	}
 
+	private toggleColumnCollapsed(columnValue: string, columnEl: HTMLElement, toggleBtn: HTMLElement): void {
+		const willCollapse = !this._prefs.collapsedColumns.has(columnValue);
+		if (willCollapse) this._prefs.collapsedColumns.add(columnValue);
+		else this._prefs.collapsedColumns.delete(columnValue);
+
+		// In swimlane mode a single column value is rendered once per lane, so the
+		// new state has to be mirrored onto every matching node — not just the one
+		// whose toggle was clicked.
+		const boardEl = this.containerEl.querySelector<HTMLElement>(`.${CSS_CLASSES.BOARD}`);
+		const columnEls: HTMLElement[] = [];
+		if (boardEl) {
+			boardEl.querySelectorAll<HTMLElement>(`.${CSS_CLASSES.COLUMN}`).forEach((el) => {
+				if (el.getAttribute(DATA_ATTRIBUTES.COLUMN_VALUE) === columnValue) columnEls.push(el);
+			});
+		}
+		if (columnEls.length === 0) columnEls.push(columnEl);
+
+		columnEls.forEach((el) => {
+			el.classList.toggle(CSS_CLASSES.COLUMN_COLLAPSED, willCollapse);
+			const btn = el.querySelector<HTMLElement>(`.${CSS_CLASSES.COLUMN_TOGGLE}`) ?? (el === columnEl ? toggleBtn : null);
+			if (btn) updateColumnToggleEl(btn, willCollapse);
+		});
+
+		this._persistPrefs();
+	}
+
 	private _sortSwimlaneValues(values: string[]): string[] {
 		return sortSwimlaneValues(values);
 	}
@@ -1019,6 +1071,7 @@ export class KanbanView extends BasesView {
 			cardFingerprints: this._cardFingerprints,
 			globallyEmptyColumns: this._globallyEmptyColumns,
 			colorEntireColumn: this._lastColorEntireColumn ?? false,
+			collapsedColumns: this._prefs.collapsedColumns,
 		};
 	}
 
@@ -1029,6 +1082,7 @@ export class KanbanView extends BasesView {
 			onRemoveColumn: (val, el) => this.removeColumn(val, el),
 			createAddButton: (colVal, laneVal) => this.createAddButton(colVal, laneVal),
 			getQuickAddFolder: () => this.getQuickAddFolder(),
+			onToggleColumnCollapsed: (val, el, toggleBtn) => this.toggleColumnCollapsed(val, el, toggleBtn),
 		};
 	}
 
