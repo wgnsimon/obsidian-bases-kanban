@@ -36,6 +36,8 @@ export const DATA_ATTRIBUTES = {
 	COLUMN_POSITION: 'data-column-position',
 	COLUMN_COLOR: 'data-column-color',
 	SWIMLANE_VALUE: 'data-swimlane-value',
+	/** Mirrors the attribute Pretty Properties puts on its own colored pills. */
+	PROPERTY_PILL_VALUE: 'data-property-pill-value',
 } as const;
 
 /**
@@ -117,6 +119,10 @@ export const CSS_CLASSES = {
 	COLUMN_COLOR_SWATCH: 'obk-column-color-swatch',
 	COLUMN_COLOR_SWATCH_ACTIVE: 'obk-column-color-swatch--active',
 	COLUMN_COLOR_NONE: 'obk-column-color-none',
+
+	// Pretty Properties color compatibility
+	CARD_PROPERTY_ITEM: 'obk-card-property-item',
+	CARD_PROPERTY_COLORED: 'obk-card-property-colored',
 } as const;
 
 /** Sortable.js configuration constants */

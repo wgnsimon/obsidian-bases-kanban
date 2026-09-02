@@ -21,6 +21,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Custom Card Titles**: Display a frontmatter property as the card title instead of the file name — useful when files share a common name (e.g., `README.md`) across folders
 - **Cover Images**: Show a cover image on each card by picking a frontmatter property — mirrors Obsidian's native Cards view *Image property* with matching fit (cover/contain) and aspect-ratio controls, so one frontmatter field works for both views
 - **Property Word Wrap**: Toggle property text wrapping on cards to handle long property values
+- **Pretty Properties Colors**: If the [Pretty Properties](https://github.com/anareaty/pretty-properties) plugin is installed, card property values are shown with the colors you configured there — list values are colored item by item, and the `data-property-pill-value` attribute is mirrored so your own CSS snippets apply inside the kanban too. Nothing to configure here, and nothing changes when that plugin is absent
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
