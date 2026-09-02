@@ -638,3 +638,9 @@
 	padding: 0 6px;
 	border-radius: 4px;
 }
+
+/* Uncolored list items keep the comma separation they had when the whole list
+   was rendered into one element; colored ones read as pills and don't need it. */
+.obk-card-property-item:not(.obk-card-property-colored):not(:last-child)::after {
+	content: ",";
+}
