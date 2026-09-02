@@ -13,7 +13,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Quick Add Buttons**: Create new cards directly from a column's `+` button with the column value, and swimlane value when used, filled in automatically
 - **Column Reordering**: Drag columns by their handle (⋮⋮) to reorder them to your preference
 - **Swimlanes**: Optionally group the board into horizontal lanes using a second property
-- **Column Color Themes**: Assign colors to columns using the color picker button for visual categorization
+- **Column Color Themes**: Assign colors to columns using the color picker button for visual categorization — 16 theme-aware colors, including dark/light variants of red and green, plus teal, indigo, brown and gray
 - **Column Order Persistence**: Your column order is saved per property and persists across sessions
 - **Property Selection**: Choose which property determines your columns (e.g., "Status", "Priority", "Category")
 - **Uncategorized Entries**: Notes without a value for the selected property are automatically grouped in an "Uncategorized" column

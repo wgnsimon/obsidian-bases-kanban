@@ -289,10 +289,14 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;
 	padding: 8px;
-	display: flex;
+	/* Fixed 6-per-row grid: the palette is long enough that flex-wrap against an
+	   explicit width gave ragged rows as swatches were added. */
+	display: grid;
+	grid-template-columns: repeat(6, auto);
+	justify-items: center;
 	gap: 6px;
-	flex-wrap: wrap;
-	width: 164px;
+	width: max-content;
+	max-width: calc(100vw - 16px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	z-index: 100;
 }
