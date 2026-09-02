@@ -129,6 +129,7 @@ export class KanbanView extends BasesView {
 	private _lastImageAspectRatio: number | undefined = undefined;
 	private _lastSwimlanePropertyId: BasesPropertyId | null | undefined = undefined;
 	private _lastQuickAddFolder: string | null | undefined = undefined;
+	private _lastColorEntireColumn: boolean | undefined = undefined;
 	private _cardFingerprints: Map<string, string> = new Map();
 	// Column values empty across the whole board (every swimlane). Recomputed each
 	// render() and read via _buildColumnCtx so components can show a remove button
@@ -508,6 +509,10 @@ export class KanbanView extends BasesView {
 			const quickAddFolderChanged = currentQuickAddFolder !== this._lastQuickAddFolder;
 			this._lastQuickAddFolder = currentQuickAddFolder;
 
+			const currentColorEntireColumn = this.config?.get('colorEntireColumn') === true;
+			const colorEntireColumnChanged = currentColorEntireColumn !== this._lastColorEntireColumn;
+			this._lastColorEntireColumn = currentColorEntireColumn;
+
 			const existingBoard = this.containerEl.querySelector<HTMLElement>(`.${CSS_CLASSES.BOARD}`);
 			const optionsChanged =
 				orderChanged ||
@@ -517,7 +522,8 @@ export class KanbanView extends BasesView {
 				imageFitChanged ||
 				imageAspectRatioChanged ||
 				swimlanePropertyChanged ||
-				quickAddFolderChanged;
+				quickAddFolderChanged ||
+				colorEntireColumnChanged;
 
 			const lanes = new Map<string | null, Map<string, BasesEntry[]>>();
 			if (groupedByLane) {
@@ -1064,6 +1070,7 @@ export class KanbanView extends BasesView {
 			dragging: this._dragging,
 			cardFingerprints: this._cardFingerprints,
 			globallyEmptyColumns: this._globallyEmptyColumns,
+			colorEntireColumn: this._lastColorEntireColumn ?? false,
 			collapsedColumns: this._prefs.collapsedColumns,
 		};
 	}
@@ -1144,7 +1151,8 @@ export class KanbanView extends BasesView {
 			const swatch = anchorEl.doc.createElement('div');
 			swatch.className = CSS_CLASSES.COLUMN_COLOR_SWATCH;
 			swatch.style.background = color.cssVar;
-			swatch.title = color.name;
+			swatch.title = color.label;
+			swatch.setAttribute('aria-label', color.label);
 			if (currentColor === color.name) swatch.classList.add(CSS_CLASSES.COLUMN_COLOR_SWATCH_ACTIVE);
 			swatch.addEventListener('click', () => {
 				this.applyColumnColor(columnEl, color.name);
@@ -1602,6 +1610,11 @@ export class KanbanView extends BasesView {
 				displayName: 'Wrap property values',
 				type: 'toggle',
 				key: 'wrapPropertyValues',
+			},
+			{
+				displayName: 'Color entire column',
+				type: 'toggle',
+				key: 'colorEntireColumn',
 			},
 		];
 	}

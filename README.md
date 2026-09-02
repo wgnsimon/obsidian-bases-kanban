@@ -13,7 +13,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Quick Add Buttons**: Create new cards directly from a column's `+` button with the column value, and swimlane value when used, filled in automatically
 - **Column Reordering**: Drag columns by their handle (⋮⋮) to reorder them to your preference
 - **Swimlanes**: Optionally group the board into horizontal lanes using a second property
-- **Column Color Themes**: Assign colors to columns using the color picker button for visual categorization
+- **Column Color Themes**: Assign colors to columns using the color picker button for visual categorization — 16 theme-aware colors, including dark/light variants of red and green, plus teal, indigo, brown and gray
 - **Column Order Persistence**: Your column order is saved per property and persists across sessions
 - **Property Selection**: Choose which property determines your columns (e.g., "Status", "Priority", "Category")
 - **Uncategorized Entries**: Notes without a value for the selected property are automatically grouped in an "Uncategorized" column
@@ -24,6 +24,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
+- **Color Entire Column**: Board-level toggle that extends each column's assigned color from the header across the whole column
 - **Collapsible Columns**: Collapse a column from its header to hide its cards — the state is remembered per board and per grouping property
 
 ## Installation
@@ -100,6 +101,10 @@ If your notes have a frontmatter property pointing at a cover image (e.g., `cove
 - Use "Image fit" to choose between Cover (crop to fill) and Contain (letterbox)
 - Drag the "Image aspect ratio" slider to size the cover — wide banner on the left, tall portrait on the right
 - The same property value also works in Obsidian's built-in Cards view, so the two views stay in sync
+
+If you want column colors to stand out more than a tinted header:
+- Enable the "Color entire column" toggle to tint each column's whole background in its assigned color
+- It applies to the entire board at once; columns without an assigned color are left unchanged
 
 ## Development
 

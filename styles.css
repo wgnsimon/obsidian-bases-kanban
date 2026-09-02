@@ -289,10 +289,14 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;
 	padding: 8px;
-	display: flex;
+	/* Fixed 6-per-row grid: the palette is long enough that flex-wrap against an
+	   explicit width gave ragged rows as swatches were added. */
+	display: grid;
+	grid-template-columns: repeat(6, auto);
+	justify-items: center;
 	gap: 6px;
-	flex-wrap: wrap;
-	width: 164px;
+	width: max-content;
+	max-width: calc(100vw - 16px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	z-index: 100;
 }
@@ -614,6 +618,32 @@
 	background: var(--interactive-accent);
 	border: 2px dashed var(--interactive-accent);
 	border-radius: 6px;
+}
+
+/* "Color entire column" board option: tint the whole column, not just its header.
+   Every mix is against --obk-column-accent-color, which defaults to `transparent`,
+   so an uncolored column mixes 0% of nothing and keeps its normal appearance.
+   The percentages stay low because cards sit on --background-primary and must
+   remain readable; the header keeps a stronger tint so it still reads as a header. */
+.obk-column--full-color {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 12%, var(--background-secondary));
+	border-color: color-mix(in srgb, var(--obk-column-accent-color, transparent) 35%, var(--background-modifier-border));
+}
+
+.obk-column--full-color .obk-column-header {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 25%, var(--background-primary-alt));
+	border-bottom-color: color-mix(
+		in srgb,
+		var(--obk-column-accent-color, transparent) 35%,
+		var(--background-modifier-border)
+	);
+}
+
+/* The body is transparent by default and inherits the column tint above. In
+   swimlane mode the body overflows visibly, so paint it explicitly to keep the
+   tint continuous across the full lane height. */
+.obk-column--full-color .obk-column-body {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 12%, var(--background-secondary));
 }
 
 /* Collapsed column: the header stays fully visible and the column keeps its
