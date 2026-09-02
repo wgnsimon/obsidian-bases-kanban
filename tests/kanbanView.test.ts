@@ -2320,7 +2320,10 @@ describe('Column Colors', () => {
 		const swatches = popover.querySelectorAll('.obk-column-color-swatch') as NodeListOf<HTMLElement>;
 		assert.ok(swatches.length > 1, 'Popover should have color swatches');
 		const firstColorSwatch = swatches[1]; // index 0 is "none"
-		const swatchTitle = firstColorSwatch.title; // e.g. "red"
+		// Swatch titles are human-readable labels ("Red"), so the persisted name is
+		// taken from the palette's first entry, which tests/colorPalette.test.ts pins.
+		const swatchTitle = 'red';
+		assert.strictEqual(firstColorSwatch.title, 'Red', 'Swatch should be titled with its human-readable label');
 		firstColorSwatch.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
 		// Popover should be gone
