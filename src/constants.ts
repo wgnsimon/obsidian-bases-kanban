@@ -117,6 +117,10 @@ export const CSS_CLASSES = {
 	COLUMN_COLOR_SWATCH: 'obk-column-color-swatch',
 	COLUMN_COLOR_SWATCH_ACTIVE: 'obk-column-color-swatch--active',
 	COLUMN_COLOR_NONE: 'obk-column-color-none',
+
+	// Collapsible column
+	COLUMN_COLLAPSED: 'obk-column--collapsed',
+	COLUMN_TOGGLE: 'obk-column-toggle',
 } as const;
 
 /** Sortable.js configuration constants */

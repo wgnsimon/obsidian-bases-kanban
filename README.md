@@ -24,6 +24,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
+- **Collapsible Columns**: Collapse a column from its header to hide its cards — the state is remembered per board and per grouping property
 
 ## Installation
 
@@ -66,6 +67,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 8. Drag columns by their handle (⋮⋮) to reorder them - your preferred order will be saved
 9. Optionally, select a property in "Swimlane by" to split the board into horizontal lanes
 10. Optionally, select a property in "Card title property" to display that property's value as each card's title instead of the file name
+11. Collapse a column with the chevron in its header to hide its cards — the column stays in place and reopens with the same button
 
 ### Example
 
