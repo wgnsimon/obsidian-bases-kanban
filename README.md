@@ -26,6 +26,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Responsive Design**: Works well on different screen sizes
 - **Color Entire Column**: Board-level toggle that extends each column's assigned color from the header across the whole column
 - **Collapsible Columns**: Collapse a column from its header to hide its cards — the state is remembered per board and per grouping property
+- **Done Columns**: Nominate one or more column values as "done" — cards in those columns render with struck-through titles so a finished board reads at a glance
 
 ## Installation
 
@@ -69,6 +70,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 9. Optionally, select a property in "Swimlane by" to split the board into horizontal lanes
 10. Optionally, select a property in "Card title property" to display that property's value as each card's title instead of the file name
 11. Collapse a column with the chevron in its header to hide its cards — the column stays in place and reopens with the same button
+12. Optionally, type a column value into "Done column" to strike through the titles of cards in that column — matching ignores case, and several values can be given comma-separated (e.g. `Done, Archived`)
 
 ### Example
 

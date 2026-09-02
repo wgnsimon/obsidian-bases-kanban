@@ -143,6 +143,8 @@ export const CSS_CLASSES = {
 	// Collapsible column
 	COLUMN_COLLAPSED: 'obk-column--collapsed',
 	COLUMN_TOGGLE: 'obk-column-toggle',
+	// Column nominated as "done" via the Done column view option
+	COLUMN_DONE: 'obk-column--done',
 } as const;
 
 /** Sortable.js configuration constants */

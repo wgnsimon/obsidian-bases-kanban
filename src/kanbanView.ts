@@ -130,6 +130,7 @@ export class KanbanView extends BasesView {
 	private _lastSwimlanePropertyId: BasesPropertyId | null | undefined = undefined;
 	private _lastQuickAddFolder: string | null | undefined = undefined;
 	private _lastColorEntireColumn: boolean | undefined = undefined;
+	private _lastDoneColumnKey: string | undefined = undefined;
 	private _cardFingerprints: Map<string, string> = new Map();
 	// Column values empty across the whole board (every swimlane). Recomputed each
 	// render() and read via _buildColumnCtx so components can show a remove button
@@ -513,6 +514,11 @@ export class KanbanView extends BasesView {
 			const colorEntireColumnChanged = currentColorEntireColumn !== this._lastColorEntireColumn;
 			this._lastColorEntireColumn = currentColorEntireColumn;
 
+			// Sorted so re-typing the same values in a different order is not a change.
+			const currentDoneColumnKey = [...this.getDoneColumnValues()].sort().join(',');
+			const doneColumnChanged = currentDoneColumnKey !== this._lastDoneColumnKey;
+			this._lastDoneColumnKey = currentDoneColumnKey;
+
 			const existingBoard = this.containerEl.querySelector<HTMLElement>(`.${CSS_CLASSES.BOARD}`);
 			const optionsChanged =
 				orderChanged ||
@@ -523,7 +529,8 @@ export class KanbanView extends BasesView {
 				imageAspectRatioChanged ||
 				swimlanePropertyChanged ||
 				quickAddFolderChanged ||
-				colorEntireColumnChanged;
+				colorEntireColumnChanged ||
+				doneColumnChanged;
 
 			const lanes = new Map<string | null, Map<string, BasesEntry[]>>();
 			if (groupedByLane) {
@@ -1072,6 +1079,7 @@ export class KanbanView extends BasesView {
 			globallyEmptyColumns: this._globallyEmptyColumns,
 			colorEntireColumn: this._lastColorEntireColumn ?? false,
 			collapsedColumns: this._prefs.collapsedColumns,
+			doneColumnValues: this.getDoneColumnValues(),
 		};
 	}
 
@@ -1186,6 +1194,21 @@ export class KanbanView extends BasesView {
 		const trimmed = raw.trim();
 		if (!trimmed) return null;
 		return normalizePath(trimmed);
+	}
+
+	/**
+	 * Column values the user nominated as "done", lowercased for case-insensitive
+	 * matching. Several values may be given comma-separated.
+	 */
+	private getDoneColumnValues(): Set<string> {
+		const raw = this.config?.get('doneColumn');
+		if (typeof raw !== 'string') return new Set();
+		return new Set(
+			raw
+				.split(',')
+				.map((part) => part.trim().toLowerCase())
+				.filter((part) => part.length > 0),
+		);
 	}
 
 	private _buildQuickAddCtx(): QuickAddCtx {
@@ -1615,6 +1638,12 @@ export class KanbanView extends BasesView {
 				displayName: 'Color entire column',
 				type: 'toggle',
 				key: 'colorEntireColumn',
+			},
+			{
+				displayName: 'Done column',
+				type: 'text',
+				key: 'doneColumn',
+				placeholder: 'Optional: e.g. Done (comma-separated for several)',
 			},
 		];
 	}

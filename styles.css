@@ -690,3 +690,14 @@
 	outline: 2px solid var(--background-modifier-border-focus);
 	outline-offset: 2px;
 }
+
+/* Done column — cards in a column nominated via the "Done column" option */
+.obk-column--done .obk-card-title {
+	text-decoration: line-through;
+	text-decoration-thickness: 1px;
+	color: var(--text-muted);
+}
+
+.obk-column--done .obk-column-title {
+	color: var(--text-muted);
+}
