@@ -137,6 +137,9 @@ export const CSS_CLASSES = {
 	COLUMN_COLOR_SWATCH: 'obk-column-color-swatch',
 	COLUMN_COLOR_SWATCH_ACTIVE: 'obk-column-color-swatch--active',
 	COLUMN_COLOR_NONE: 'obk-column-color-none',
+
+	// Board-level "Color entire column" option: tints the whole column, not just its header
+	COLUMN_FULL_COLOR: 'obk-column--full-color',
 } as const;
 
 /** Sortable.js configuration constants */

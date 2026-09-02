@@ -13,6 +13,9 @@ export interface ColumnRenderCtx {
 	// persist only because they're saved in columnOrder, so they get a remove
 	// button. Board-wide, so it can't be derived from a single column's entries.
 	globallyEmptyColumns: Set<string>;
+	// Board-level option: tint the whole column in its accent color, not just the
+	// header. Uncolored columns are unaffected because the accent is transparent.
+	colorEntireColumn: boolean;
 }
 
 export interface ColumnCallbacks {
@@ -65,6 +68,7 @@ export function createColumn(
 
 	const colorName = ctx.prefs.columnColors[value] ?? null;
 	cb.applyColumnColor(columnEl, colorName);
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_FULL_COLOR, ctx.colorEntireColumn);
 
 	const headerEl = columnEl.createDiv({ cls: CSS_CLASSES.COLUMN_HEADER });
 
@@ -111,6 +115,9 @@ export function patchColumnCards(
 
 	const countEl = columnEl.querySelector(`.${CSS_CLASSES.COLUMN_COUNT}`);
 	if (countEl) countEl.textContent = `${newEntries.length}`;
+
+	// Re-synced on the incremental path too so the class cannot drift from the option.
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_FULL_COLOR, ctx.colorEntireColumn);
 
 	// The remove button reflects board-wide emptiness, not this column's local
 	// count: in swimlane mode a column can be empty in one lane while holding cards
