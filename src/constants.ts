@@ -128,6 +128,12 @@ export const CSS_CLASSES = {
 	// Column remove button (shown only when column is empty)
 	COLUMN_REMOVE_BTN: 'obk-column-remove-btn',
 
+	// Rename modal
+	RENAME_FORM: 'obk-rename-form',
+	RENAME_INPUT: 'obk-rename-input',
+	RENAME_ACTIONS: 'obk-rename-actions',
+	RENAME_ERROR: 'obk-rename-error',
+
 	// Quick add modal
 	QUICK_ADD_FORM: 'obk-quick-add-form',
 	QUICK_ADD_INPUT: 'obk-quick-add-input',

@@ -47,6 +47,7 @@ import {
 } from './constants.ts';
 import type { DebouncedFn } from './utils/debounce.ts';
 import { debounce } from './utils/debounce.ts';
+import { RenameModal, validateNewTitle, type RenameTarget } from './renameModal.ts';
 import { ensureGroupExists, normalizePropertyValue } from './utils/grouping.ts';
 
 export interface LegacyData {
@@ -1135,6 +1136,7 @@ export class KanbanView extends BasesView {
 	private _buildCardMenuCallbacks(): CardMenuCallbacks {
 		return {
 			onOpenInNewTab: (file) => this.openInNewTab(file),
+			onRename: (entry) => this.openRenameModal(entry),
 			onDuplicate: (file) => void this.duplicateFile(file),
 			onMarkAsDone: (file, columnValue) => void this.markFileAsDone(file, columnValue),
 			onDelete: (file) => void this.deleteFile(file),
@@ -1583,6 +1585,106 @@ export class KanbanView extends BasesView {
 	}
 
 	/** Trash via fileManager so Obsidian's "deleted files" preference is honoured. */
+	/**
+	 * A card shows the configured "Card title property" when one is set, and the
+	 * file name otherwise — so that is what a rename has to write to.
+	 */
+	private renameTarget(): RenameTarget {
+		return this.cardTitlePropertyId ? 'property' : 'file';
+	}
+
+	private currentCardTitle(entry: BasesEntry): string {
+		if (!this.cardTitlePropertyId) return entry.file.basename;
+		// A blank title property falls back to the file name on the card, so seed
+		// the field with the same thing the user is looking at.
+		const raw = entry.getValue(this.cardTitlePropertyId)?.toString().trim() ?? '';
+		return raw || entry.file.basename;
+	}
+
+	private openRenameModal(entry: BasesEntry): void {
+		if (!this.app) return;
+		new RenameModal(this.app, {
+			currentTitle: this.currentCardTitle(entry),
+			target: this.renameTarget(),
+			onSubmit: (title) => this.renameCard(entry, title),
+		}).open();
+	}
+
+	/** Resolves to a message for the modal to show, or null when the rename succeeded. */
+	private async renameCard(entry: BasesEntry, newTitle: string): Promise<string | null> {
+		const target = this.renameTarget();
+		const validationError = validateNewTitle(newTitle, target);
+		if (validationError) return validationError;
+		return target === 'property'
+			? this.setCardTitleProperty(entry.file, newTitle)
+			: this.renameNoteFile(entry.file, newTitle);
+	}
+
+	private async setCardTitleProperty(file: TFile, newTitle: string): Promise<string | null> {
+		if (!this.cardTitlePropertyId || !this.app?.fileManager) return 'The vault is not available.';
+		const propertyName = parsePropertyId(this.cardTitlePropertyId).name;
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+				frontmatter[propertyName] = newTitle;
+			});
+		} catch (error) {
+			console.error('Error updating card title property:', error);
+			return 'Could not update the title property.';
+		}
+		return null;
+	}
+
+	private async renameNoteFile(file: TFile, newTitle: string): Promise<string | null> {
+		if (!this.app?.fileManager || !this.app?.vault) return 'The vault is not available.';
+		if (newTitle === file.basename) return null;
+
+		const separatorIndex = file.path.lastIndexOf('/');
+		const folder = separatorIndex === -1 ? '' : file.path.slice(0, separatorIndex);
+		const extension = file.extension ? `.${file.extension}` : '';
+		const newPath = normalizePath(`${folder}/${newTitle}${extension}`);
+
+		if (this.app.vault.getAbstractFileByPath(newPath)) {
+			return 'A note with that name already exists in this folder.';
+		}
+
+		const oldPath = file.path;
+		try {
+			// renameFile (not vault.rename) so links to the note across the vault
+			// are rewritten.
+			await this.app.fileManager.renameFile(file, newPath);
+		} catch (error) {
+			console.error('Error renaming note:', error);
+			return 'Could not rename the note.';
+		}
+		this.repointPath(oldPath, newPath);
+		return null;
+	}
+
+	/**
+	 * Card order, fingerprints and the active card are all keyed by file path, so
+	 * a rename would otherwise orphan them — dropping the card to the end of its
+	 * column and rebuilding it needlessly.
+	 */
+	private repointPath(oldPath: string, newPath: string): void {
+		let orderChanged = false;
+		for (const paths of Object.values(this._prefs.cardOrders)) {
+			const index = paths.indexOf(oldPath);
+			if (index !== -1) {
+				paths[index] = newPath;
+				orderChanged = true;
+			}
+		}
+
+		const fingerprint = this._cardFingerprints.get(oldPath);
+		if (fingerprint !== undefined) {
+			this._cardFingerprints.delete(oldPath);
+			this._cardFingerprints.set(newPath, fingerprint);
+		}
+
+		if (this._activeCardPath === oldPath) this._activeCardPath = newPath;
+		if (orderChanged) this._persistPrefs();
+	}
+
 	private async deleteFile(file: TFile): Promise<void> {
 		if (!this.app?.fileManager) return;
 		try {

@@ -13,6 +13,7 @@ export interface CardMenuCtx {
 
 export interface CardMenuCallbacks {
 	onOpenInNewTab: (file: TFile) => void;
+	onRename: (entry: BasesEntry) => void;
 	onDuplicate: (file: TFile) => void;
 	onMarkAsDone: (file: TFile, columnValue: string) => void;
 	onDelete: (file: TFile) => void;
@@ -66,6 +67,7 @@ export function buildCardMenuItems(
 	const file = entry.file;
 	const items: CardMenuItem[] = [
 		{ title: 'Open in new tab', icon: 'file-plus', onClick: () => cb.onOpenInNewTab(file) },
+		{ title: 'Rename', icon: 'pencil', onClick: () => cb.onRename(entry) },
 		{ title: 'Copy title', icon: 'copy', onClick: () => void copyCardTitle(getCardTitle(entry, cardEl)) },
 		{ title: 'Duplicate', icon: 'files', onClick: () => cb.onDuplicate(file) },
 	];
