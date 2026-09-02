@@ -701,3 +701,32 @@
 .obk-column--done .obk-column-title {
 	color: var(--text-muted);
 }
+
+/* Pretty Properties color compatibility */
+.obk-card-property-item {
+	display: inline-block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	vertical-align: bottom;
+}
+
+.obk-card-property-item + .obk-card-property-item {
+	margin-left: 6px;
+}
+
+.obk-card-property-wrap .obk-card-property-item {
+	white-space: normal;
+}
+
+/* Only colored values become pills; uncolored values keep their plain look. */
+.obk-card-property-colored {
+	padding: 0 6px;
+	border-radius: 4px;
+}
+
+/* Uncolored list items keep the comma separation they had when the whole list
+   was rendered into one element; colored ones read as pills and don't need it. */
+.obk-card-property-item:not(.obk-card-property-colored):not(:last-child)::after {
+	content: ",";
+}

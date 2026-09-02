@@ -1,7 +1,8 @@
 import type { App, BasesEntry, BasesPropertyId } from 'obsidian';
-import { Keymap, NullValue } from 'obsidian';
+import { Keymap, ListValue, NullValue, parsePropertyId } from 'obsidian';
 import type { TFile } from 'obsidian';
 import { CSS_CLASSES, DATA_ATTRIBUTES } from '../constants.ts';
+import { applyPrettyPropertyColors } from '../utils/prettyProperties.ts';
 
 export interface CardRenderCtx {
 	app: App;
@@ -120,7 +121,21 @@ export function createCard(entry: BasesEntry, ctx: CardRenderCtx, cb: CardCallba
 		}
 		propertyEl.createSpan({ text: label, cls: CSS_CLASSES.CARD_PROPERTY_LABEL });
 		const valueEl = propertyEl.createSpan({ cls: CSS_CLASSES.CARD_PROPERTY_VALUE });
-		value.renderTo(valueEl, ctx.app.renderContext);
+		// Pretty Properties colors per value, so list entries each get their own
+		// element — otherwise a multitext property could only ever take one color.
+		const propertyName = parsePropertyId(propertyId).name;
+		if (value instanceof ListValue) {
+			const itemCount = value.length();
+			for (let i = 0; i < itemCount; i++) {
+				const item = value.get(i);
+				const itemEl = valueEl.createSpan({ cls: CSS_CLASSES.CARD_PROPERTY_ITEM });
+				item.renderTo(itemEl, ctx.app.renderContext);
+				applyPrettyPropertyColors(itemEl, propertyName, item.toString());
+			}
+		} else {
+			value.renderTo(valueEl, ctx.app.renderContext);
+			applyPrettyPropertyColors(valueEl, propertyName, value.toString());
+		}
 	}
 
 	// JS-managed hover: mouseenter/mouseleave instead of CSS :hover so the
