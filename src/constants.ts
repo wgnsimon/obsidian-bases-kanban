@@ -8,16 +8,36 @@ export const UNCATEGORIZED_LABEL = 'Uncategorized';
 /** Source id registered with Obsidian's Page Preview core plugin */
 export const HOVER_LINK_SOURCE_ID = 'kanban-bases-view';
 
-/** Color palette for column accents, using Obsidian design system variables */
+/**
+ * Color palette for column accents, using Obsidian design system variables.
+ *
+ * `name` is persisted per column in each base's `columnColors` config, so entries
+ * must never be renamed, reordered or removed — saved boards look colors up by name.
+ * Append new entries at the end only.
+ *
+ * The extended entries are derived with `color-mix()` from the same design system
+ * variables rather than hard-coded hex, so they track the user's light/dark theme.
+ * `cssVar` is used both as a full-strength swatch background and as
+ * `--obk-column-accent-color`, which styles.css mixes again at 15% — the resulting
+ * nested `color-mix()` is valid CSS Color 5 and renders correctly in Obsidian's Chromium.
+ */
 export const COLOR_PALETTE = [
-	{ name: 'red', cssVar: 'var(--color-red)' },
-	{ name: 'orange', cssVar: 'var(--color-orange)' },
-	{ name: 'yellow', cssVar: 'var(--color-yellow)' },
-	{ name: 'green', cssVar: 'var(--color-green)' },
-	{ name: 'cyan', cssVar: 'var(--color-cyan)' },
-	{ name: 'blue', cssVar: 'var(--color-blue)' },
-	{ name: 'purple', cssVar: 'var(--color-purple)' },
-	{ name: 'pink', cssVar: 'var(--color-pink)' },
+	{ name: 'red', label: 'Red', cssVar: 'var(--color-red)' },
+	{ name: 'orange', label: 'Orange', cssVar: 'var(--color-orange)' },
+	{ name: 'yellow', label: 'Yellow', cssVar: 'var(--color-yellow)' },
+	{ name: 'green', label: 'Green', cssVar: 'var(--color-green)' },
+	{ name: 'cyan', label: 'Cyan', cssVar: 'var(--color-cyan)' },
+	{ name: 'blue', label: 'Blue', cssVar: 'var(--color-blue)' },
+	{ name: 'purple', label: 'Purple', cssVar: 'var(--color-purple)' },
+	{ name: 'pink', label: 'Pink', cssVar: 'var(--color-pink)' },
+	{ name: 'dark-red', label: 'Dark red', cssVar: 'color-mix(in srgb, var(--color-red) 60%, black)' },
+	{ name: 'light-red', label: 'Light red', cssVar: 'color-mix(in srgb, var(--color-red) 55%, white)' },
+	{ name: 'dark-green', label: 'Dark green', cssVar: 'color-mix(in srgb, var(--color-green) 60%, black)' },
+	{ name: 'light-green', label: 'Light green', cssVar: 'color-mix(in srgb, var(--color-green) 50%, white)' },
+	{ name: 'teal', label: 'Teal', cssVar: 'color-mix(in srgb, var(--color-cyan) 60%, var(--color-green))' },
+	{ name: 'indigo', label: 'Indigo', cssVar: 'color-mix(in srgb, var(--color-blue) 55%, var(--color-purple))' },
+	{ name: 'brown', label: 'Brown', cssVar: 'color-mix(in srgb, var(--color-orange) 60%, black)' },
+	{ name: 'gray', label: 'Gray', cssVar: 'color-mix(in srgb, var(--text-muted) 85%, var(--background-primary))' },
 ] as const;
 
 export type ColorName = (typeof COLOR_PALETTE)[number]['name'];

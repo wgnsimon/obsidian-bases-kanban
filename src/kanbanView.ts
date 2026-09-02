@@ -1090,7 +1090,8 @@ export class KanbanView extends BasesView {
 			const swatch = anchorEl.doc.createElement('div');
 			swatch.className = CSS_CLASSES.COLUMN_COLOR_SWATCH;
 			swatch.style.background = color.cssVar;
-			swatch.title = color.name;
+			swatch.title = color.label;
+			swatch.setAttribute('aria-label', color.label);
 			if (currentColor === color.name) swatch.classList.add(CSS_CLASSES.COLUMN_COLOR_SWATCH_ACTIVE);
 			swatch.addEventListener('click', () => {
 				this.applyColumnColor(columnEl, color.name);
