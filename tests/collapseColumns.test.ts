@@ -204,6 +204,44 @@ describe('Collapsible columns', () => {
 		assert.deepStrictEqual(savedCollapsedColumns(controller), { [PROPERTY_STATUS]: ['To Do'] });
 	});
 
+	// A collapsed column used to hide its body with `display: none`, which left
+	// Sortable a zero-area drop target — you could not drag a card into it. The
+	// body has to stay in the DOM, keep its sortable-container marker and keep its
+	// registered Sortable; CSS shrinks it to a strip instead of removing it.
+	test('a collapsed column keeps a live drop target', () => {
+		const { view } = createView();
+		triggerDataUpdate(view);
+
+		const column = getColumn(view.containerEl, 'To Do');
+		getToggle(column).click();
+		assert.ok(column.classList.contains(CSS_CLASSES.COLUMN_COLLAPSED), 'column should be collapsed');
+
+		const body = column.querySelector<HTMLElement>(`.${CSS_CLASSES.COLUMN_BODY}[${DATA_ATTRIBUTES.SORTABLE_CONTAINER}]`);
+		assert.ok(body, 'the collapsed column must keep its sortable container body');
+		assert.ok(column.contains(body), 'the body must stay inside the column');
+		assert.ok(
+			(view as any)._columnSortables.has('To Do'),
+			'the card Sortable for the collapsed column must stay registered',
+		);
+	});
+
+	test('cards dropped into a collapsed column stay in its body', () => {
+		const { view } = createView();
+		triggerDataUpdate(view);
+
+		const column = getColumn(view.containerEl, 'To Do');
+		getToggle(column).click();
+		triggerDataUpdate(view);
+
+		const body = column.querySelector<HTMLElement>(`.${CSS_CLASSES.COLUMN_BODY}`);
+		assert.ok(body, 'body should exist');
+		assert.strictEqual(
+			body.querySelectorAll(`.${CSS_CLASSES.CARD}`).length,
+			2,
+			'collapsing hides the cards visually but must not remove them',
+		);
+	});
+
 	test('collapsed state is scoped per group-by property', () => {
 		let groupByProperty = PROPERTY_STATUS;
 		const { view, controller } = createView(() => groupByProperty);

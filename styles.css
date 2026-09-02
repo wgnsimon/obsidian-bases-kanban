@@ -647,12 +647,38 @@
 }
 
 /* Collapsed column: the header stays fully visible and the column keeps its
-   normal width — only the card body is hidden, mirroring collapsed swimlanes.
+   normal width; the cards are hidden but the body shrinks to a drop strip rather
+   than disappearing.
+
+   The body must keep a live height instead of `display: none`: it is the
+   Sortable drop target, and a zero-area target can never sit under the pointer,
+   so a collapsed column would refuse cards altogether. Sortable skips
+   `display: none` children when locating a drop position, so hiding the cards
+   leaves the strip behaving like an empty list.
+
    The swimlane-scoped selector matches the specificity of the
    `.obk-board--with-swimlanes .obk-column` sizing rules so a collapsed column
    shrinks to its header in both layouts instead of stretching to the row. */
-.obk-column--collapsed .obk-column-body {
+.obk-column--collapsed .obk-column-body,
+.obk-swimlane--collapsed .obk-column--collapsed .obk-column-body {
+	min-height: 44px;
+	max-height: 44px;
+	padding: 6px 10px;
+	overflow: hidden;
+	border-top: 1px dashed var(--background-modifier-border);
+}
+
+/* Hide the stored cards but never the drag placeholder — that is what shows the
+   card will land here. */
+.obk-column--collapsed .obk-column-body > .obk-card:not(.obk-card-ghost) {
 	display: none;
+}
+
+/* While a card hovers over it, let the strip grow to the placeholder's height so
+   the drop reads clearly instead of being clipped. */
+.obk-column--collapsed .obk-column-body:has(> .obk-card-ghost) {
+	max-height: none;
+	border-top-color: var(--interactive-accent);
 }
 
 .obk-column--collapsed,
