@@ -22,6 +22,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Cover Images**: Show a cover image on each card by picking a frontmatter property — mirrors Obsidian's native Cards view *Image property* with matching fit (cover/contain) and aspect-ratio controls, so one frontmatter field works for both views
 - **Property Word Wrap**: Toggle property text wrapping on cards to handle long property values
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
+- **Card Context Menu**: Right-click any card for note actions — open in new tab, copy title, duplicate, mark as done, and delete
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
 
@@ -66,6 +67,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 8. Drag columns by their handle (⋮⋮) to reorder them - your preferred order will be saved
 9. Optionally, select a property in "Swimlane by" to split the board into horizontal lanes
 10. Optionally, select a property in "Card title property" to display that property's value as each card's title instead of the file name
+11. Right-click any card to open its context menu: **Open in new tab**, **Copy title**, **Duplicate**, **Mark as done** (when a done column is configured), and **Delete**
 
 ### Example
 
