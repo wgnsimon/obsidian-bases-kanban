@@ -148,8 +148,8 @@ describe('Card context menu', () => {
 		const evt = rightClick(cardFor('Task 1.md'));
 
 		const menu = lastMenu();
-		assert.deepStrictEqual(itemTitles(menu), ['Open in new tab', 'Copy title', 'Duplicate', 'Delete']);
-		assert.strictEqual(menu.entries[3], 'separator', 'a separator should precede Delete');
+		assert.deepStrictEqual(itemTitles(menu), ['Open in new tab', 'Rename', 'Copy title', 'Duplicate', 'Delete']);
+		assert.strictEqual(menu.entries[4], 'separator', 'a separator should precede Delete');
 		assert.ok(menu.shown, 'menu should be shown at the mouse event');
 		assert.strictEqual(menu.shownAtEvent, evt);
 		assert.strictEqual(evt.defaultPrevented, true, 'the native context menu should be suppressed');
@@ -260,7 +260,14 @@ describe('Card context menu', () => {
 
 		rightClick(cardFor('Task 1.md'));
 		const menu = lastMenu();
-		assert.deepStrictEqual(itemTitles(menu), ['Open in new tab', 'Copy title', 'Duplicate', 'Mark as done', 'Delete']);
+		assert.deepStrictEqual(itemTitles(menu), [
+			'Open in new tab',
+			'Rename',
+			'Copy title',
+			'Duplicate',
+			'Mark as done',
+			'Delete',
+		]);
 
 		itemNamed(menu, 'Mark as done').click();
 		await flush();

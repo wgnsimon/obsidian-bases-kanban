@@ -23,7 +23,8 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Property Word Wrap**: Toggle property text wrapping on cards to handle long property values
 - **Pretty Properties Colors**: If the [Pretty Properties](https://github.com/anareaty/pretty-properties) plugin is installed, card property values are shown with the colors you configured there — list values are colored item by item, and the `data-property-pill-value` attribute is mirrored so your own CSS snippets apply inside the kanban too. Nothing to configure here, and nothing changes when that plugin is absent
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
-- **Card Context Menu**: Right-click any card for note actions — open in new tab, copy title, duplicate, mark as done, and delete
+- **Card Context Menu**: Right-click any card for note actions — open in new tab, rename, copy title, duplicate, mark as done, and delete
+- **Rename From The Board**: Rename a card without leaving the kanban — it edits whatever the card shows, renaming the note (links across the vault follow) or updating the configured card title property
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
 - **Color Entire Column**: Board-level toggle that extends each column's assigned color from the header across the whole column
@@ -73,7 +74,8 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 10. Optionally, select a property in "Card title property" to display that property's value as each card's title instead of the file name
 11. Collapse a column with the chevron in its header to hide its cards — the column stays in place and reopens with the same button
 12. Optionally, type a column value into "Done column" to strike through the titles of cards in that column — matching ignores case, and several values can be given comma-separated (e.g. `Done, Archived`)
-13. Right-click any card to open its context menu: **Open in new tab**, **Copy title**, **Duplicate**, **Mark as done** (when a done column is configured), and **Delete**
+13. Right-click any card to open its context menu: **Open in new tab**, **Rename**, **Copy title**, **Duplicate**, **Mark as done** (when a done column is configured), and **Delete**
+14. Select **Rename** to change a card's title in place — with no "Card title property" configured this renames the note itself, otherwise it writes the new value to that property
 
 ### Example
 

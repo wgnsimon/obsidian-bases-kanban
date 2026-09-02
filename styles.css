@@ -730,3 +730,33 @@
 .obk-card-property-item:not(.obk-card-property-colored):not(:last-child)::after {
 	content: ",";
 }
+
+/* Rename modal */
+.obk-rename-form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.obk-rename-input {
+	width: 100%;
+}
+
+/* Kept in the DOM while empty so revealing a message does not shift the
+   buttons out from under the pointer. */
+.obk-rename-error {
+	color: var(--text-error);
+	font-size: 13px;
+	line-height: 1.4;
+	margin-top: -6px;
+}
+
+.obk-rename-error:empty {
+	display: none;
+}
+
+.obk-rename-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
