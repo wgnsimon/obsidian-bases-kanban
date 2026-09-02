@@ -24,6 +24,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
+- **Color Entire Column**: Board-level toggle that extends each column's assigned color from the header across the whole column
 
 ## Installation
 
@@ -98,6 +99,10 @@ If your notes have a frontmatter property pointing at a cover image (e.g., `cove
 - Use "Image fit" to choose between Cover (crop to fill) and Contain (letterbox)
 - Drag the "Image aspect ratio" slider to size the cover — wide banner on the left, tall portrait on the right
 - The same property value also works in Obsidian's built-in Cards view, so the two views stay in sync
+
+If you want column colors to stand out more than a tinted header:
+- Enable the "Color entire column" toggle to tint each column's whole background in its assigned color
+- It applies to the entire board at once; columns without an assigned color are left unchanged
 
 ## Development
 
