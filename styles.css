@@ -289,10 +289,14 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;
 	padding: 8px;
-	display: flex;
+	/* Fixed 6-per-row grid: the palette is long enough that flex-wrap against an
+	   explicit width gave ragged rows as swatches were added. */
+	display: grid;
+	grid-template-columns: repeat(6, auto);
+	justify-items: center;
 	gap: 6px;
-	flex-wrap: wrap;
-	width: 164px;
+	width: max-content;
+	max-width: calc(100vw - 16px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	z-index: 100;
 }
@@ -614,4 +618,86 @@
 	background: var(--interactive-accent);
 	border: 2px dashed var(--interactive-accent);
 	border-radius: 6px;
+}
+
+/* "Color entire column" board option: tint the whole column, not just its header.
+   Every mix is against --obk-column-accent-color, which defaults to `transparent`,
+   so an uncolored column mixes 0% of nothing and keeps its normal appearance.
+   The percentages stay low because cards sit on --background-primary and must
+   remain readable; the header keeps a stronger tint so it still reads as a header. */
+.obk-column--full-color {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 12%, var(--background-secondary));
+	border-color: color-mix(in srgb, var(--obk-column-accent-color, transparent) 35%, var(--background-modifier-border));
+}
+
+.obk-column--full-color .obk-column-header {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 25%, var(--background-primary-alt));
+	border-bottom-color: color-mix(
+		in srgb,
+		var(--obk-column-accent-color, transparent) 35%,
+		var(--background-modifier-border)
+	);
+}
+
+/* The body is transparent by default and inherits the column tint above. In
+   swimlane mode the body overflows visibly, so paint it explicitly to keep the
+   tint continuous across the full lane height. */
+.obk-column--full-color .obk-column-body {
+	background: color-mix(in srgb, var(--obk-column-accent-color, transparent) 12%, var(--background-secondary));
+}
+
+/* Collapsed column: the header stays fully visible and the column keeps its
+   normal width — only the card body is hidden, mirroring collapsed swimlanes.
+   The swimlane-scoped selector matches the specificity of the
+   `.obk-board--with-swimlanes .obk-column` sizing rules so a collapsed column
+   shrinks to its header in both layouts instead of stretching to the row. */
+.obk-column--collapsed .obk-column-body {
+	display: none;
+}
+
+.obk-column--collapsed,
+.obk-board--with-swimlanes .obk-column--collapsed {
+	min-height: 0;
+	align-self: flex-start;
+}
+
+.obk-column-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	color: var(--text-muted);
+	background: var(--background-modifier-border);
+	border: 0;
+	border-radius: 4px;
+	cursor: pointer;
+	user-select: none;
+	flex-shrink: 0;
+	--icon-size: var(--icon-xs);
+	transition:
+		background 0.1s ease,
+		color 0.1s ease;
+}
+
+.obk-column-toggle:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-border-hover);
+}
+
+.obk-column-toggle:focus-visible {
+	outline: 2px solid var(--background-modifier-border-focus);
+	outline-offset: 2px;
+}
+
+/* Done column — cards in a column nominated via the "Done column" option */
+.obk-column--done .obk-card-title {
+	text-decoration: line-through;
+	text-decoration-thickness: 1px;
+	color: var(--text-muted);
+}
+
+.obk-column--done .obk-column-title {
+	color: var(--text-muted);
 }

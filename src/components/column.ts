@@ -1,4 +1,5 @@
 import type { BasesEntry } from 'obsidian';
+import { setIcon } from 'obsidian';
 import { COLOR_PALETTE, CSS_CLASSES, DATA_ATTRIBUTES } from '../constants.ts';
 import { createCard, computeCardFingerprint, type CardRenderCtx, type CardCallbacks } from './card.ts';
 
@@ -13,6 +14,17 @@ export interface ColumnRenderCtx {
 	// persist only because they're saved in columnOrder, so they get a remove
 	// button. Board-wide, so it can't be derived from a single column's entries.
 	globallyEmptyColumns: Set<string>;
+	// Board-level option: tint the whole column in its accent color, not just the
+	// header. Uncolored columns are unaffected because the accent is transparent.
+	colorEntireColumn: boolean;
+	// Column values the user collapsed. Scoped to the group-by property only: the
+	// same value is rendered once per swimlane, and all of those nodes share one
+	// collapsed state.
+	collapsedColumns: Set<string>;
+	// Column values the user nominated as "done", lowercased for case-insensitive
+	// matching. Cards in these columns render struck through, via a class on the
+	// column so card markup stays untouched and survives patching.
+	doneColumnValues: Set<string>;
 }
 
 export interface ColumnCallbacks {
@@ -21,6 +33,16 @@ export interface ColumnCallbacks {
 	onRemoveColumn: (columnValue: string, columnEl: HTMLElement) => void;
 	createAddButton: (columnValue: string, swimlaneValue: string | null) => HTMLElement;
 	getQuickAddFolder: () => string | null;
+	onToggleColumnCollapsed: (columnValue: string, columnEl: HTMLElement, toggleBtn: HTMLElement) => void;
+}
+
+export function updateColumnToggle(toggleBtn: HTMLElement, isCollapsed: boolean): void {
+	const label = isCollapsed ? 'Expand column' : 'Collapse column';
+	toggleBtn.empty();
+	setIcon(toggleBtn, isCollapsed ? 'chevron-right' : 'chevron-down');
+	toggleBtn.setAttribute('aria-label', label);
+	toggleBtn.setAttribute('title', label);
+	toggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
 }
 
 export function applyColumnColor(columnEl: HTMLElement, colorName: string | null): void {
@@ -63,13 +85,35 @@ export function createColumn(
 	columnEl.className = CSS_CLASSES.COLUMN;
 	columnEl.setAttribute(DATA_ATTRIBUTES.COLUMN_VALUE, value);
 
+	if (ctx.doneColumnValues.has(value.toLowerCase())) {
+		columnEl.classList.add(CSS_CLASSES.COLUMN_DONE);
+	}
+
 	const colorName = ctx.prefs.columnColors[value] ?? null;
 	cb.applyColumnColor(columnEl, colorName);
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_FULL_COLOR, ctx.colorEntireColumn);
 
 	const headerEl = columnEl.createDiv({ cls: CSS_CLASSES.COLUMN_HEADER });
 
 	const dragHandle = headerEl.createDiv({ cls: CSS_CLASSES.COLUMN_DRAG_HANDLE });
 	dragHandle.textContent = '⋮⋮';
+
+	const isCollapsed = ctx.collapsedColumns.has(value);
+	if (isCollapsed) columnEl.classList.add(CSS_CLASSES.COLUMN_COLLAPSED);
+
+	const toggleBtn = headerEl.createEl('button', {
+		cls: CSS_CLASSES.COLUMN_TOGGLE,
+		attr: { type: 'button' },
+	});
+	updateColumnToggle(toggleBtn, isCollapsed);
+	toggleBtn.addEventListener('click', (e) => {
+		e.stopPropagation();
+		try {
+			cb.onToggleColumnCollapsed(value, columnEl, toggleBtn);
+		} catch (error) {
+			console.error('KanbanView: error toggling column collapsed state', error);
+		}
+	});
 
 	const colorBtn = headerEl.createDiv({ cls: CSS_CLASSES.COLUMN_COLOR_BTN });
 	colorBtn.setAttribute('aria-label', `Set color for column: ${value}`);
@@ -112,6 +156,9 @@ export function patchColumnCards(
 	const countEl = columnEl.querySelector(`.${CSS_CLASSES.COLUMN_COUNT}`);
 	if (countEl) countEl.textContent = `${newEntries.length}`;
 
+	// Re-synced on the incremental path too so the class cannot drift from the option.
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_FULL_COLOR, ctx.colorEntireColumn);
+
 	// The remove button reflects board-wide emptiness, not this column's local
 	// count: in swimlane mode a column can be empty in one lane while holding cards
 	// in another, so `newEntries.length` is not a reliable signal of global emptiness.
@@ -125,6 +172,13 @@ export function patchColumnCards(
 		existingRemoveBtn.remove();
 	}
 
+	// Re-sync the done class so the incremental path can't drift from a full rebuild
+	// after the setting changes underneath an already-rendered column.
+	columnEl.classList.toggle(
+		CSS_CLASSES.COLUMN_DONE,
+		!!columnValue && ctx.doneColumnValues.has(columnValue.toLowerCase()),
+	);
+
 	const existingAddBtn = headerEl?.querySelector(`.${CSS_CLASSES.COLUMN_ADD_BTN}`) ?? null;
 	const hasFolder = !!cb.getQuickAddFolder();
 	if (headerEl && columnValue && hasFolder && !existingAddBtn) {
@@ -134,6 +188,13 @@ export function patchColumnCards(
 	} else if (!hasFolder && existingAddBtn) {
 		existingAddBtn.remove();
 	}
+
+	// Re-sync collapsed state so the incremental path never drifts from _prefs
+	// (e.g. after a lane was rebuilt while another lane's column was toggled).
+	const isCollapsed = !!columnValue && ctx.collapsedColumns.has(columnValue);
+	columnEl.classList.toggle(CSS_CLASSES.COLUMN_COLLAPSED, isCollapsed);
+	const toggleBtn = headerEl?.querySelector<HTMLElement>(`.${CSS_CLASSES.COLUMN_TOGGLE}`) ?? null;
+	if (toggleBtn) updateColumnToggle(toggleBtn, isCollapsed);
 
 	const newPaths = new Set(newEntries.map((e) => e.file.path));
 	body.querySelectorAll<HTMLElement>(`.${CSS_CLASSES.CARD}`).forEach((card) => {
