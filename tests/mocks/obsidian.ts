@@ -54,12 +54,14 @@ export interface App {
 	fileManager: {
 		processFrontMatter(file: TFile, fn: (frontmatter: any) => void | Promise<void>): Promise<void>;
 		renameFile(file: TFile, newPath: string): Promise<void>;
+		trashFile(file: TFile): Promise<void>;
 	};
 	vault: {
 		getMarkdownFiles(): TFile[];
 		getFolderByPath(path: string): { path: string; name: string } | null;
 		getAbstractFileByPath(path: string): TFile | null;
 		getResourcePath(file: { path: string }): string;
+		copy(file: TFile, newPath: string): Promise<TFile>;
 	};
 	renderContext: RenderContext;
 }
@@ -410,4 +412,98 @@ export function parsePropertyId(propertyId: BasesPropertyId): { name: string; ty
 		name: propertyId,
 		type: 'note',
 	};
+}
+
+// Menu mocks
+//
+// Real classes: Menu extends Component, MenuItem has a private constructor and is
+// only reachable through Menu.addItem(). The mocks record what was assembled so
+// tests can assert titles/order and invoke a handler via MenuItem.click().
+
+export class MenuItem {
+	title: string | DocumentFragment = '';
+	icon: string | null = null;
+	section: string | null = null;
+	warning = false;
+	disabled = false;
+	clickHandler: ((evt: MouseEvent | KeyboardEvent) => unknown) | null = null;
+
+	setTitle(title: string | DocumentFragment): this {
+		this.title = title;
+		return this;
+	}
+
+	setIcon(icon: string | null): this {
+		this.icon = icon;
+		return this;
+	}
+
+	setSection(section: string): this {
+		this.section = section;
+		return this;
+	}
+
+	setWarning(isWarning: boolean): this {
+		this.warning = isWarning;
+		return this;
+	}
+
+	setDisabled(disabled: boolean): this {
+		this.disabled = disabled;
+		return this;
+	}
+
+	onClick(callback: (evt: MouseEvent | KeyboardEvent) => unknown): this {
+		this.clickHandler = callback;
+		return this;
+	}
+
+	/** Test-only: invoke the registered handler. */
+	click(evt?: MouseEvent | KeyboardEvent): unknown {
+		return this.clickHandler?.(evt ?? new MouseEvent('click'));
+	}
+}
+
+/** A separator recorded in Menu.entries. */
+export const MENU_SEPARATOR = 'separator';
+
+export class Menu {
+	/** Every menu constructed since the last reset, newest last. */
+	static menus: Menu[] = [];
+
+	entries: Array<MenuItem | typeof MENU_SEPARATOR> = [];
+	shown = false;
+	shownAtEvent: MouseEvent | null = null;
+
+	constructor() {
+		Menu.menus.push(this);
+	}
+
+	/** Items only, separators skipped. */
+	get items(): MenuItem[] {
+		return this.entries.filter((entry): entry is MenuItem => entry !== MENU_SEPARATOR);
+	}
+
+	addItem(cb: (item: MenuItem) => unknown): this {
+		const item = new MenuItem();
+		cb(item);
+		this.entries.push(item);
+		return this;
+	}
+
+	addSeparator(): this {
+		this.entries.push(MENU_SEPARATOR);
+		return this;
+	}
+
+	showAtMouseEvent(evt: MouseEvent): this {
+		this.shown = true;
+		this.shownAtEvent = evt;
+		return this;
+	}
+
+	hide(): this {
+		this.shown = false;
+		return this;
+	}
 }
