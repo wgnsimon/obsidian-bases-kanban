@@ -20,6 +20,7 @@ export interface CardCallbacks {
 	onHoverPreview: (linktext: string, sourcePath: string, event: MouseEvent, targetEl: HTMLElement) => void;
 	onSetActiveCard: (path: string | null) => void;
 	onOpenInBackgroundTab: (file: TFile) => void;
+	onCardContextMenu: (event: MouseEvent, entry: BasesEntry, cardEl: HTMLElement) => void;
 }
 
 export function computeCardFingerprint(entry: BasesEntry, ctx: CardRenderCtx): string {
@@ -146,6 +147,12 @@ export function createCard(entry: BasesEntry, ctx: CardRenderCtx, cb: CardCallba
 	};
 	cardEl.addEventListener('click', clickHandler);
 	cardEl.addEventListener('auxclick', clickHandler);
+
+	cardEl.addEventListener('contextmenu', (e) => {
+		if (e.target instanceof Element && e.target.closest('a')) return;
+		e.preventDefault();
+		cb.onCardContextMenu(e, entry, cardEl);
+	});
 
 	// Prevent middle-click autoscroll inside cards.
 	cardEl.addEventListener('mousedown', (e) => {

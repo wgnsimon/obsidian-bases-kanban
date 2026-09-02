@@ -6,6 +6,7 @@ import {
 	type CardRenderCtx,
 	type CardCallbacks,
 } from './components/card.ts';
+import { openCardMenu as openCardMenuEl, type CardMenuCtx, type CardMenuCallbacks } from './components/cardMenu.ts';
 import {
 	createAddButton as createAddButtonEl,
 	createQuickAddCard as createQuickAddCardEl,
@@ -1122,7 +1123,26 @@ export class KanbanView extends BasesView {
 			onHoverPreview: (lt, sp, e, el) => this.triggerHoverPreview(lt, sp, e, el),
 			onSetActiveCard: (path) => this.setActiveCard(path),
 			onOpenInBackgroundTab: (file) => this.openInBackgroundTab(file),
+			onCardContextMenu: (event, entry, cardEl) => this.openCardMenu(event, entry, cardEl),
 		};
+	}
+
+	private _buildCardMenuCtx(): CardMenuCtx {
+		// Without a group-by property there is nothing to write, so no done item.
+		return { doneColumnValue: this._prefsPropertyId ? this.getDoneColumnValue() : null };
+	}
+
+	private _buildCardMenuCallbacks(): CardMenuCallbacks {
+		return {
+			onOpenInNewTab: (file) => this.openInNewTab(file),
+			onDuplicate: (file) => void this.duplicateFile(file),
+			onMarkAsDone: (file, columnValue) => void this.markFileAsDone(file, columnValue),
+			onDelete: (file) => void this.deleteFile(file),
+		};
+	}
+
+	private openCardMenu(event: MouseEvent, entry: BasesEntry, cardEl: HTMLElement): void {
+		openCardMenuEl(event, entry, cardEl, this._buildCardMenuCtx(), this._buildCardMenuCallbacks());
 	}
 
 	private createCard(entry: BasesEntry): HTMLElement {
@@ -1208,6 +1228,22 @@ export class KanbanView extends BasesView {
 				.split(',')
 				.map((part) => part.trim().toLowerCase())
 				.filter((part) => part.length > 0),
+		);
+	}
+
+	/**
+	 * The done value to write into frontmatter. getDoneColumnValues() lowercases,
+	 * so the raw setting is re-read to keep the casing the user typed.
+	 */
+	private getDoneColumnValue(): string | null {
+		if (this.getDoneColumnValues().size === 0) return null;
+		const raw = this.config?.get('doneColumn');
+		if (typeof raw !== 'string') return null;
+		return (
+			raw
+				.split(',')
+				.find((value) => value.trim().length > 0)
+				?.trim() ?? null
 		);
 	}
 
@@ -1501,6 +1537,60 @@ export class KanbanView extends BasesView {
 			if (--frames > 0) window.requestAnimationFrame(tick);
 		};
 		window.requestAnimationFrame(tick);
+	}
+
+	/** Open a file in a new tab and focus it, unlike openInBackgroundTab(). */
+	private openInNewTab(file: TFile): void {
+		if (!this.app?.workspace) return;
+		void this.app.workspace.getLeaf('tab').openFile(file);
+	}
+
+	/** Path for a copy of `file`, appending " 1", " 2", … until one is free. */
+	private duplicatePath(file: TFile): string {
+		const separatorIndex = file.path.lastIndexOf('/');
+		const folder = separatorIndex === -1 ? '' : file.path.slice(0, separatorIndex);
+		const extension = file.extension ? `.${file.extension}` : '';
+		let counter = 1;
+		let candidate = normalizePath(`${folder}/${file.basename} ${counter}${extension}`);
+		while (this.app?.vault.getAbstractFileByPath(candidate)) {
+			counter++;
+			candidate = normalizePath(`${folder}/${file.basename} ${counter}${extension}`);
+		}
+		return candidate;
+	}
+
+	private async duplicateFile(file: TFile): Promise<void> {
+		if (!this.app?.vault) return;
+		try {
+			await this.app.vault.copy(file, this.duplicatePath(file));
+		} catch (error) {
+			console.error('Error duplicating note:', error);
+			new Notice('Could not duplicate note.');
+		}
+	}
+
+	private async markFileAsDone(file: TFile, columnValue: string): Promise<void> {
+		if (!this._prefsPropertyId || !this.app?.fileManager) return;
+		const columnPropertyName = parsePropertyId(this._prefsPropertyId).name;
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+				frontmatter[columnPropertyName] = columnValue;
+			});
+		} catch (error) {
+			console.error('Error marking note as done:', error);
+			new Notice('Could not mark note as done.');
+		}
+	}
+
+	/** Trash via fileManager so Obsidian's "deleted files" preference is honoured. */
+	private async deleteFile(file: TFile): Promise<void> {
+		if (!this.app?.fileManager) return;
+		try {
+			await this.app.fileManager.trashFile(file);
+		} catch (error) {
+			console.error('Error deleting note:', error);
+			new Notice('Could not delete note.');
+		}
 	}
 
 	private setActiveCard(path: string | null): void {

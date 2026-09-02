@@ -22,6 +22,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 - **Cover Images**: Show a cover image on each card by picking a frontmatter property — mirrors Obsidian's native Cards view *Image property* with matching fit (cover/contain) and aspect-ratio controls, so one frontmatter field works for both views
 - **Property Word Wrap**: Toggle property text wrapping on cards to handle long property values
 - **Click to Open**: Click any card to open the corresponding note (Cmd/Ctrl+click to open in new tab)
+- **Card Context Menu**: Right-click any card for note actions — open in new tab, copy title, duplicate, mark as done, and delete
 - **Visual Feedback**: Clear visual indicators during drag operations
 - **Responsive Design**: Works well on different screen sizes
 - **Color Entire Column**: Board-level toggle that extends each column's assigned color from the header across the whole column
@@ -71,6 +72,7 @@ A kanban-style drag-and-drop custom view for Obsidian Bases that allows you to o
 10. Optionally, select a property in "Card title property" to display that property's value as each card's title instead of the file name
 11. Collapse a column with the chevron in its header to hide its cards — the column stays in place and reopens with the same button
 12. Optionally, type a column value into "Done column" to strike through the titles of cards in that column — matching ignores case, and several values can be given comma-separated (e.g. `Done, Archived`)
+13. Right-click any card to open its context menu: **Open in new tab**, **Copy title**, **Duplicate**, **Mark as done** (when a done column is configured), and **Delete**
 
 ### Example
 
